@@ -507,6 +507,11 @@
   50% { box-shadow: 0 0 15px rgba(124, 58, 237, 0.6); }
 }
 
+.sound-off {
+  opacity: 0.5;
+  border-color: #4a2570;
+}
+
 /* --- Paytable --- */
 .paytable {
   margin-top: clamp(12px, 3vw, 24px);

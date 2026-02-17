@@ -1,5 +1,19 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import "./SlotMachine.css";
+import {
+  playSpinSound,
+  playReelStopSound,
+  playWinSound,
+  playBigWinSound,
+  playScatterSound,
+  playLoseSound,
+  playNearMissSound,
+  playClickSound,
+  playBetChangeSound,
+  playCoinSound,
+  playFreeSpinSound,
+  initAudio,
+} from "./sounds";
 
 // Nicole-themed silly symbols
 const SYMBOLS = [
@@ -34,6 +48,20 @@ const WIN_MESSAGES = [
   "YAYAMANIN ARC ACTIVATED 💰👑",
   "NICOLE GALIT NA SA KAHIRAPAN! 😤💸",
   "MANIFESTING WORKED BESTIE CHAROT 🙏✨",
+  "PANG-UNLI WINGS NA 'TO! 🍗🔥",
+  "GCASH NOTIF: +₱₱₱ SANAOL 🤑",
+  "GRAB FOOD CHECKOUT ARC! 🛵🍔",
+  "KWARTA IS COMING MAMI! 💸✨",
+  "TARAY MO NAMAN! Feeling millionaire ka na? 💅👑",
+  "OMG NICOLE YUMAMAN NA! ... sa peke na pera 😂",
+  "SABI KO NA EH MASWERTE KA TODAY! 🍀",
+  "ANG GALING! Pakopya naman ng swerte mo 🥺",
+  "PAHINGI NAMAN PANGKAPE MATIC 'TO EH ☕💰",
+  "BALATO NAMAN DYAN NICOLE! 🙏😂",
+  "DAMI MONG PERA SIS! ... dito lang naman 💀😂",
+  "FROM BROKE TO WOKE! 📈✨",
+  "NANAY: 'ANA MAY PERA KA NA?' - NICOLE: 'PEKE PO' 😭😂",
+  "IKAW NA ANG SLOT QUEEN NG BARANGAY! 👸🎰",
 ];
 
 const LOSE_MESSAGES = [
@@ -52,6 +80,22 @@ const LOSE_MESSAGES = [
   "Baka naman Lord, bigyan mo naman si Nicole 🙏😭",
   "Pang-jeep na lang natira sis 🚌",
   "Error 404: Swerte not found 🔍",
+  "Ang hirap maging mahirap 😭🤲",
+  "Di ka mahal ng slot machine na 'to sis 💔🎰",
+  "HAHAHAHA talo ka ulit! Spin pa? 🤣",
+  "I-manifest mo kasi! ... ah hindi pala effective 🤡",
+  "Sayang sweldo mo sis... good thing peke lang 'to 😂",
+  "Plot twist: ikaw pala yung 🤡 symbol",
+  "May nagmamahal sayo... pero hindi 'tong slot machine 💔",
+  "Ang daming red flags sa spin na 'to 🚩🚩🚩",
+  "Bakit ka pa nagising today para lang matalo dito 😩",
+  "Wag ka malungkot! Malungkot ka na nga, talo ka pa 😭😂",
+  "Alexa play 'Talo Na Naman Ako' 🎵💀",
+  "Sa next life na lang yung swerte mo sis 🪦✨",
+  "Loading swerte... 0%... FAILED ❌",
+  "Eto na ba yung rock bottom? Char HAHAHA 🪨",
+  "Nag-pray ka ba bago mag-spin? Kasi mukhang hindi eh 🙏💀",
+  "Kahit peke lang 'to masakit pa rin 😭😂",
 ];
 
 const SCATTER_MESSAGES = [
@@ -60,14 +104,28 @@ const SCATTER_MESSAGES = [
   "🎰 THE SCATTERS SAID 'PARA SA'YO 'TO NICOLE!' 🎰",
   "👸 SWERTE MO NAMAN TODAY SIS! 👸",
   "🎉 ANG GALING MO NAMAN MAMI! 🎉",
+  "💎 SCATTER SHOWER! PARANG BLESSINGS FROM ABOVE! 🌧️✨",
+  "🔮 NAKA-ALIGN ANG STARS MO SIS! SCATTER TIME! 🔮",
+  "👸 NICOLE SCATTER ARC LET'S GOOO! 🚀💎",
 ];
 
 const NEAR_MISS_MESSAGES = [
   "KONTI NA LANG! The scatter was RIGHT THERE! 😤",
   "One more scatter and KUMITA KA SANA 😭",
   "Almost had it bestie... HALOS 🥲",
-  "SO CLOSE tangina ang sakit nito 😩",
+  "SO CLOSE grabe ang sakit nito 😩",
   "The scatter said 'next time na lang beh' 💀",
+  "2 SCATTERS?! Paasa ka ba slot machine?! 😤💔",
+  "THE SCATTER WAS RIGHT THERE GRABE NAMAN 😭",
+  "Nang-aasar 'tong game na 'to eh! 2 scatter lang?! 🤬",
+  "Halos na sis! HALOS! Spin mo ulit! 🫣",
+];
+
+const BROKE_MESSAGES = [
+  "Wala ka nang pera sis 💀 Mangutang ka muna HAHAHAHA",
+  "UBOS NA! Pang-load na lang natira sayo 📱💀",
+  "Bankrupt ka na bestie! Time to sell your kidneys charot 🫘😂",
+  "Wala na talaga! Baka gusto mo mag-apply sa Jollibee? 🐝😂",
 ];
 
 type ReelSymbol = (typeof SYMBOLS)[number];
@@ -196,13 +254,41 @@ export default function SlotMachine() {
   const [totalWinThisRound, setTotalWinThisRound] = useState(0);
   const [stoppedReels, setStoppedReels] = useState<boolean[]>([true, true, true, true, true]);
   const [autoPlay, setAutoPlay] = useState(false);
+  const [soundOn, setSoundOn] = useState(true);
   const autoPlayRef = useRef(false);
+  const soundOnRef = useRef(true);
   const spinTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Keep soundOnRef in sync
+  useEffect(() => {
+    soundOnRef.current = soundOn;
+  }, [soundOn]);
+
+  // Helper to play sound only if enabled
+  const sfx = useCallback((fn: () => void) => {
+    if (soundOnRef.current) fn();
+  }, []);
+
+  // Init audio context on first interaction
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      initAudio();
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+    };
+    document.addEventListener('click', handleFirstInteraction);
+    document.addEventListener('touchstart', handleFirstInteraction);
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+    };
+  }, []);
 
   const spin = useCallback(() => {
     if (spinning) return;
     if (balance < bet && freeSpins <= 0) {
-      setMessage("Wala ka nang pera sis 💀 Mangutang ka muna HAHAHAHA");
+      setMessage(BROKE_MESSAGES[Math.floor(Math.random() * BROKE_MESSAGES.length)]);
+      sfx(playLoseSound);
       return;
     }
 
@@ -220,15 +306,18 @@ export default function SlotMachine() {
     setShowBigWin(false);
     setMessage(isFree ? `✨ FREE SPIN! ${freeSpins - 1} left ✨` : "Spinning... 🤞");
 
+    sfx(playSpinSound);
+
     // Stagger reel stops
     const delays = [0, 1, 2, 3, 4].map((i) => 600 + i * 350);
     setStoppedReels([false, false, false, false, false]);
 
     const newGrid = generateGrid();
 
-    // Stop reels one by one
+    // Stop reels one by one with sound
     delays.forEach((delay, reelIdx) => {
       setTimeout(() => {
+        sfx(() => playReelStopSound(reelIdx));
         setGrid((prev) => {
           const updated = prev.map((col, i) => (i === reelIdx ? newGrid[reelIdx] : col));
           return updated;
@@ -268,12 +357,22 @@ export default function SlotMachine() {
           SCATTER_MESSAGES[Math.floor(Math.random() * SCATTER_MESSAGES.length)] +
             ` (+${bonusSpins} FREE SPINS!)`
         );
+        sfx(playScatterSound);
+        setTimeout(() => sfx(playFreeSpinSound), 600);
       } else if (totalWin > 0) {
         setMessage(WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)]);
+        sfx(playWinSound);
+        // Coin counting sounds for wins
+        const coinCount = Math.min(Math.floor(totalWin / bet) + 2, 8);
+        for (let i = 0; i < coinCount; i++) {
+          setTimeout(() => sfx(playCoinSound), 400 + i * 100);
+        }
       } else if (scatterCount === 2) {
         setMessage(NEAR_MISS_MESSAGES[Math.floor(Math.random() * NEAR_MISS_MESSAGES.length)]);
+        sfx(playNearMissSound);
       } else {
         setMessage(LOSE_MESSAGES[Math.floor(Math.random() * LOSE_MESSAGES.length)]);
+        sfx(playLoseSound);
       }
 
       if (totalWin > 0) {
@@ -284,6 +383,7 @@ export default function SlotMachine() {
 
       if (totalWin >= bet * 10) {
         setShowBigWin(true);
+        sfx(playBigWinSound);
         setTimeout(() => setShowBigWin(false), 3000);
       }
 
@@ -291,7 +391,7 @@ export default function SlotMachine() {
       setScatterPositions(allScatPos);
       setSpinning(false);
     }, totalDelay);
-  }, [spinning, balance, bet, freeSpins]);
+  }, [spinning, balance, bet, freeSpins, sfx]);
 
   // Auto play
   useEffect(() => {
@@ -313,8 +413,14 @@ export default function SlotMachine() {
   const adjustBet = (direction: "up" | "down") => {
     const bets = [1, 2, 5, 10, 20, 50, 100, 200, 500];
     const idx = bets.indexOf(bet);
-    if (direction === "up" && idx < bets.length - 1) setBet(bets[idx + 1]);
-    if (direction === "down" && idx > 0) setBet(bets[idx - 1]);
+    if (direction === "up" && idx < bets.length - 1) {
+      setBet(bets[idx + 1]);
+      sfx(playBetChangeSound);
+    }
+    if (direction === "down" && idx > 0) {
+      setBet(bets[idx - 1]);
+      sfx(playBetChangeSound);
+    }
   };
 
   return (
@@ -431,11 +537,14 @@ export default function SlotMachine() {
           </button>
 
           <button
-            className={`auto-btn ${autoPlay ? "auto-active" : ""}`}
-            style={{ visibility: 'hidden' }}
-            aria-hidden="true"
+            className={`auto-btn ${soundOn ? "" : "sound-off"}`}
+            onClick={() => {
+              setSoundOn(!soundOn);
+              if (!soundOn) playClickSound();
+            }}
+            title={soundOn ? "Mute sounds" : "Unmute sounds"}
           >
-            AUTO
+            {soundOn ? "🔊" : "🔇"}
           </button>
         </div>
       </div>
