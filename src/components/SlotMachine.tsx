@@ -376,44 +376,42 @@ export default function SlotMachine() {
 
       {/* Controls */}
       <div className="controls">
-        <div className="control-group">
-          <label>BALANCE</label>
-          <div className="balance-display">₱{balance.toFixed(2)}</div>
-        </div>
+        <div className="controls-info-row">
+          <div className="control-group">
+            <label>BALANCE</label>
+            <div className="balance-display">₱{balance.toFixed(2)}</div>
+          </div>
 
-        <div className="control-group">
-          <label>BET</label>
-          <div className="bet-controls">
-            <button
-              className="bet-btn"
-              onClick={() => adjustBet("down")}
-              disabled={spinning}
-            >
-              −
-            </button>
-            <span className="bet-amount">₱{bet}</span>
-            <button
-              className="bet-btn"
-              onClick={() => adjustBet("up")}
-              disabled={spinning}
-            >
-              +
-            </button>
+          <div className="control-group">
+            <label>BET</label>
+            <div className="bet-controls">
+              <button
+                className="bet-btn"
+                onClick={() => adjustBet("down")}
+                disabled={spinning}
+              >
+                −
+              </button>
+              <span className="bet-amount">₱{bet}</span>
+              <button
+                className="bet-btn"
+                onClick={() => adjustBet("up")}
+                disabled={spinning}
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <div className="control-group">
+            <label>LAST WIN</label>
+            <div className="last-win-display">
+              ₱{lastWin.toFixed(2)}
+            </div>
           </div>
         </div>
 
-        <button
-          className={`spin-btn ${spinning ? "spin-btn-disabled" : ""} ${
-            freeSpins > 0 ? "spin-btn-free" : ""
-          }`}
-          onClick={spin}
-          disabled={spinning}
-        >
-          {spinning ? "💫" : freeSpins > 0 ? "🎁 FREE" : "SPIN 🎰"}
-        </button>
-
-        <div className="control-group">
-          <label>AUTO</label>
+        <div className="controls-action-row">
           <button
             className={`auto-btn ${autoPlay ? "auto-active" : ""}`}
             onClick={() => setAutoPlay(!autoPlay)}
@@ -421,13 +419,24 @@ export default function SlotMachine() {
           >
             {autoPlay ? "STOP" : "AUTO"}
           </button>
-        </div>
 
-        <div className="control-group">
-          <label>LAST WIN</label>
-          <div className="last-win-display">
-            ₱{lastWin.toFixed(2)}
-          </div>
+          <button
+            className={`spin-btn ${spinning ? "spin-btn-disabled" : ""} ${
+              freeSpins > 0 ? "spin-btn-free" : ""
+            }`}
+            onClick={spin}
+            disabled={spinning}
+          >
+            {spinning ? "💫" : freeSpins > 0 ? "🎁 FREE" : "SPIN 🎰"}
+          </button>
+
+          <button
+            className={`auto-btn ${autoPlay ? "auto-active" : ""}`}
+            style={{ visibility: 'hidden' }}
+            aria-hidden="true"
+          >
+            AUTO
+          </button>
         </div>
       </div>
 

@@ -2,6 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 :root {
@@ -16,12 +17,20 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
   background: radial-gradient(ellipse at top, #1a0a2e 0%, #0a0515 50%, #050210 100%);
   background-attachment: fixed;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Subtle animated background stars */

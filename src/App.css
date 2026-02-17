@@ -1,7 +1,16 @@
 .app {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: flex-start;
   justify-content: center;
   padding: 20px 10px;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 480px) {
+  .app {
+    padding: 8px 2px;
+  }
 }
