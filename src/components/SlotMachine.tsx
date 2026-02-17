@@ -39,10 +39,10 @@ const WIN_MESSAGES = [
 const LOSE_MESSAGES = [
   "It's giving... kalawang 💀",
   "Nicole bestie... bawi next spin? 🥲",
-  "The slots said 'hindi ka deserve' 😭",
+  "The slots said 'hindi mo deserve' 😭",
   "Your GCash balance felt that one 😬",
   "That was rough... parang lovelife mo 🤡",
-  "Have you tried being mas swerte? 🤔",
+  "Have you tried being maswerte? 🤔",
   "Sakit. Parang bills every 15th. 😩",
   "It's okay, pera lang yan... na wala ka na 🧘‍♀️",
   "At least maganda ka? Charot 💁‍♀️",
